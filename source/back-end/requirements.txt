@@ -2,4 +2,8 @@ fastapi
 uvicorn
 python-dotenv
 pydantic
+pydantic-settings
+chromadb
+ibm-watsonx-ai
+docling
 
