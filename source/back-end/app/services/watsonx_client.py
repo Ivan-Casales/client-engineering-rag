@@ -1,3 +1,4 @@
+from typing import List
 from app.core.config import settings
 from ibm_watsonx_ai import Credentials
 from ibm_watsonx_ai.foundation_models import Embeddings, ModelInference
@@ -41,12 +42,11 @@ qa_model = ModelInference(
     }
 )
 
-def get_embedding(text: str) -> list[float]:
-    results = embedding_client.embed_documents(texts=[text])
-    first = results[0]
-    if isinstance(first, dict) and 'embedding' in first:
-        return first['embedding']
-
+def get_embedding(text: str) -> List[float]:
+    resp = embedding_client.embed_documents(texts=[text])
+    first = resp[0]
+    if isinstance(first, dict):
+        return first.get("embedding", [])
     return first
 
 def rerank_documents(question: str, documents: list[str]) -> list[str]:
