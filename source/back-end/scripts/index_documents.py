@@ -32,7 +32,7 @@ def index_pdf_chunks(pdf_path: str):
 
 if __name__ == "__main__":
     current_dir = os.path.dirname(__file__)
-    pdf_path = os.path.abspath(os.path.join(current_dir, "..", "assets", "Unleashing_the_Power_of_AI_with_IBM_watsonxai.pdf"))
+    pdf_path = os.path.abspath(os.path.join(current_dir, "..", "assets", "file_to_index.pdf"))
 
     if not os.path.exists(pdf_path):
         print(f"PDF not found at path: {pdf_path}")
