@@ -2,6 +2,20 @@ from docling import SimpleDocument
 from typing import List
 
 def extract_chunks_from_pdf(path: str, chunk_size: int = 500, overlap: int = 100) -> List[str]:
+    """
+    Extract text chunks from a PDF file, preserving paragraph boundaries and applying overlap.
+
+    Parameters:
+    - path (str): Path to the PDF file.
+    - chunk_size (int): Maximum number of characters per chunk (default: 500).
+    - overlap (int): Number of overlapping characters between chunks (default: 100).
+
+    Returns:
+    - List[str]: A list of text chunks extracted from the PDF.
+
+    Raises:
+    - ValueError: If the PDF cannot be read or if the path is invalid.
+    """
     try:
         doc = SimpleDocument.from_pdf(path)
     except Exception as e:

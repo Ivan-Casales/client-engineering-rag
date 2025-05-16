@@ -43,6 +43,15 @@ qa_model = ModelInference(
 )
 
 def get_embedding(text: str) -> List[float]:
+    """
+    Compute the embedding vector for the given text.
+
+    Parameters:
+    - text (str): The input text to be embedded.
+
+    Returns:
+    - List[float]: The embedding vector as a list of floats.
+    """
     resp = embedding_client.embed_documents(texts=[text])
     first = resp[0]
     if isinstance(first, dict):
@@ -50,6 +59,16 @@ def get_embedding(text: str) -> List[float]:
     return first
 
 def rerank_documents(question: str, documents: list[str]) -> list[str]:
+    """
+    Rerank a list of documents by relevance to the given question.
+
+    Parameters:
+    - question (str): The user question used to evaluate relevance.
+    - documents (List[str]): A list of document texts to be reranked.
+
+    Returns:
+    - List[str]: Documents sorted by descending relevance.
+    """
     prompts = [f"Question: {question}\nContext: {doc}" for doc in documents]
     resp = rerank_model.generate(prompts)
 
@@ -72,6 +91,16 @@ def rerank_documents(question: str, documents: list[str]) -> list[str]:
     return [doc for doc, _ in scored]
 
 def generate_answer_with_context(context: str, question: str) -> str:
+    """
+    Generate a conversational answer based on provided context and question.
+
+    Parameters:
+    - context (str): Concatenated top documents serving as context.
+    - question (str): The user's question to be answered.
+
+    Returns:
+    - str: The generated answer text.
+    """
     prompt = (
         "System: You are a helpful assistant.\n\n"
         f"Context:\n{context}\n\n"
