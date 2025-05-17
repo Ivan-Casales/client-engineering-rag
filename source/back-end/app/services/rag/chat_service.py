@@ -1,5 +1,4 @@
 from typing import List, Dict, Tuple
-from fastapi.responses import JSONResponse
 from langchain.chains import ConversationalRetrievalChain
 from app.services.container import llm, vectorstore
 

@@ -1,7 +1,8 @@
 from app.core.config import settings
-from app.services.watsonx_client import WatsonXEmbeddings, WatsonXLLM
-from app.services.chroma_db import load_vectorstore
-from app.services.reranker import ReRanker
+from app.services.watsonx.watsonx_embeddings import WatsonXEmbeddings
+from app.services.watsonx.watsonx_llm import WatsonXLLM
+from app.services.vectorstore.chroma_db import load_vectorstore
+from app.services.rag.reranker import ReRanker
 from .utility.prompt_templates import STRICT_CONTEXT_PROMPT
 from langchain.chains import RetrievalQA
 

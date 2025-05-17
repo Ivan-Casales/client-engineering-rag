@@ -1,7 +1,6 @@
 import re
 from langchain.chains import RetrievalQA
-from langchain_community.vectorstores import Chroma
-from .utility.prompt_templates import STRICT_CONTEXT_PROMPT
+from app.services.utility.prompt_templates import STRICT_CONTEXT_PROMPT
 from .reranker import ReRanker
 from app.services.container import llm
 

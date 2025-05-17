@@ -1,12 +1,11 @@
-from app.services.pdf_parser import extract_chunks_from_pdf
-from app.services.chroma_db import load_vectorstore
-from app.services.watsonx_client import WatsonXEmbeddings
+from app.services.utility.pdf_parser import extract_chunks_from_pdf
+from .chroma_db import load_vectorstore
+from app.services.watsonx.watsonx_embeddings import WatsonXEmbeddings
 from app.core.config import settings
 from langchain.schema import Document
 import tempfile
 import os
 from typing import Tuple
-
 
 def process_pdf_upload(file_bytes: bytes) -> Tuple[int, str]:
     tmp_path = None

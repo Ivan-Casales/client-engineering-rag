@@ -1,21 +1,16 @@
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import JSONResponse
 from app.api.schemas import QuestionRequest, AnswerResponse, ChatRequest, ChatResponse
-from app.services.rag_pipeline import generate_answer
-from app.services.loader_service import process_pdf_upload
+from app.services.rag.rag_pipeline import generate_answer
+from app.services.vectorstore.loader_service import process_pdf_upload
 from langchain.chains import RetrievalQA
-from app.services.chat_service import process_chat
+from app.services.rag.chat_service import process_chat
 from app.services.container import rag_chain, reranker
 
 router = APIRouter()
 
-# Dependency injection of the RetrievalQA chain
-def get_rag_chain() -> RetrievalQA:
-    from app.services.container import rag_chain
-    return rag_chain
-
 @router.post("/ask", response_model=AnswerResponse)
-async def ask_question(payload: QuestionRequest, rag_chain: RetrievalQA = Depends(get_rag_chain)):
+async def ask_question(payload: QuestionRequest):
     try:
         answer = generate_answer(payload.question, rag_chain, reranker)
         return {"answer": answer}
