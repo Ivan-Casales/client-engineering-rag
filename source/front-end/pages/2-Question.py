@@ -24,7 +24,7 @@ if st.button("Ask"):
             response = requests.post(
                 endpoint,
                 json={"question": question},
-                timeout=10
+                timeout=30
             )
             if response.status_code == 200:
                 data = response.json()
