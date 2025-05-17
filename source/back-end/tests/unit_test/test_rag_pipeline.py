@@ -17,14 +17,15 @@ class DummyChain:
     def run(self, question):
         return self._response
 
+
 def test_build_rag_chain_invokes_from_chain_type(monkeypatch):
     dummy_retriever = object()
     vectorstore = DummyVectorStore(dummy_retriever)
     dummy_llm = DummyLLM()
 
-    # Capture calls to from_chain_type
+    # Capture calls to from_chain_type, allowing extra kwargs
     called = {}
-    def fake_from_chain_type(*, llm, retriever):
+    def fake_from_chain_type(*, llm, retriever, **kwargs):
         called['llm'] = llm
         called['retriever'] = retriever
         return DummyChain("test_response")
@@ -36,12 +37,21 @@ def test_build_rag_chain_invokes_from_chain_type(monkeypatch):
     assert called['llm'] is dummy_llm
     assert called['retriever'] is dummy_retriever
 
+
 @pytest.mark.parametrize("question,expected", [
     ("Hello?", "Answer1"),
     ("Bye?", "Answer2")
 ])
 def test_generate_answer_returns_chain_response(question, expected):
+    # Create a fake chain with retriever that returns documents, forcing call to run()
+    class FakeRetriever:
+        def get_relevant_documents(self, q):
+            assert q == question
+            return ["doc"]
+
     class FakeChain:
+        def __init__(self):
+            self.retriever = FakeRetriever()
         def run(self, q):
             assert q == question
             return expected
