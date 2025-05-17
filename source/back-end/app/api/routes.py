@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from fastapi.responses import JSONResponse
-from app.api.schemas import QuestionRequest, AnswerResponse
+from app.api.schemas import QuestionRequest, AnswerResponse, ChatRequest, ChatResponse
 from app.services.rag_pipeline import generate_answer
 from app.services.loader_service import process_pdf_upload
 from langchain.chains import RetrievalQA
+from app.services.chat_service import process_chat
 
 router = APIRouter()
 
@@ -34,3 +35,14 @@ async def upload_pdf(file: UploadFile = File(...)):
         return JSONResponse(status_code=500, content={"detail": f"Failed to process file: {error}"})
     
     return {"detail": f"{num_chunks} chunks indexed successfully."}
+
+@router.post("/chat", response_model=ChatResponse)
+async def chat_conversation(payload: ChatRequest):
+    """
+    Chat endpoint that maintains context across turns.
+    """
+    try:
+        new_history, answer = process_chat(payload.message, payload.history)
+        return ChatResponse(answer=answer, history=new_history)
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
