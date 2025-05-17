@@ -1,7 +1,9 @@
 from app.core.config import settings
 from app.services.watsonx_client import WatsonXEmbeddings, WatsonXLLM
 from app.services.chroma_db import load_vectorstore
-from app.services.rag_pipeline import build_rag_chain
+from app.services.reranker import ReRanker
+from .utility.prompt_templates import STRICT_CONTEXT_PROMPT
+from langchain.chains import RetrievalQA
 
 # Instantiate WatsonX embeddings
 embedding_model = WatsonXEmbeddings()
@@ -20,4 +22,12 @@ llm = WatsonXLLM(
 )
 
 # Build the RetrievalQA chain
-rag_chain = build_rag_chain(vectorstore, llm)
+retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
+rag_chain = RetrievalQA.from_chain_type(
+        llm=llm,
+        retriever=retriever,
+        chain_type_kwargs={"prompt": STRICT_CONTEXT_PROMPT},
+    )
+
+# Instantiate the ReRanker
+reranker = ReRanker()

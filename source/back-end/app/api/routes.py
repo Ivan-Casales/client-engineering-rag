@@ -5,6 +5,7 @@ from app.services.rag_pipeline import generate_answer
 from app.services.loader_service import process_pdf_upload
 from langchain.chains import RetrievalQA
 from app.services.chat_service import process_chat
+from app.services.container import rag_chain, reranker
 
 router = APIRouter()
 
@@ -16,7 +17,7 @@ def get_rag_chain() -> RetrievalQA:
 @router.post("/ask", response_model=AnswerResponse)
 async def ask_question(payload: QuestionRequest, rag_chain: RetrievalQA = Depends(get_rag_chain)):
     try:
-        answer = generate_answer(payload.question, rag_chain)
+        answer = generate_answer(payload.question, rag_chain, reranker)
         return {"answer": answer}
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
