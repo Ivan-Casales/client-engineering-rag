@@ -1,3 +1,15 @@
+import sys
+
+# To avoid circular import issues, we need to remove the modules from sys.modules
+# before importing them.
+for module in (
+    "app.core.config",
+    "app.services.watsonx_client",
+    "app.services.chroma_db",
+    "app.services.rag_pipeline",
+):
+    sys.modules.pop(module, None)
+
 from app.services.watsonx_client import WatsonXEmbeddings, WatsonXLLM
 
 def get_embedding(text: str) -> list[float]:
