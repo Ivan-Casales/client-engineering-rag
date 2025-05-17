@@ -6,6 +6,10 @@ class Settings(BaseSettings):
     WATSONX_PROJECT_ID: str
     WATSONX_APIKEY: str
     CHROMA_PERSIST_DIRECTORY: str = ".chromadb"
+    MODEL_ID: str = "ibm/granite-3-3-8b-instruct"
+    EMBEDDING_MODEL_ID: str = "ibm/slate-30m-english-rtrvr-v2"
+    TEMPERATURE: float = 0.0
+    MAX_NEW_TOKENS: int = 300
 
     @field_validator("WATSONX_URL")
     def validate_url(cls, v):

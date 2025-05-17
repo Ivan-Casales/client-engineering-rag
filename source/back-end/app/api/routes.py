@@ -1,15 +1,36 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from fastapi.responses import JSONResponse
 from app.api.schemas import QuestionRequest, AnswerResponse
 from app.services.rag_pipeline import generate_answer
+from app.services.loader_service import process_pdf_upload
+from langchain.chains import RetrievalQA
 
 router = APIRouter()
 
+# Dependency injection of the RetrievalQA chain
+def get_rag_chain() -> RetrievalQA:
+    from app.services.container import rag_chain
+    return rag_chain
+
 @router.post("/ask", response_model=AnswerResponse)
-async def ask_question(payload: QuestionRequest):
+async def ask_question(payload: QuestionRequest, rag_chain: RetrievalQA = Depends(get_rag_chain)):
     try:
-        answer = generate_answer(payload.question)
+        answer = generate_answer(payload.question, rag_chain)
         return {"answer": answer}
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
-    except Exception:
-        raise HTTPException(status_code=502, detail="Error processing request")
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Error processing request: {e}")
+
+@router.post("/upload-pdf")
+async def upload_pdf(file: UploadFile = File(...)):
+    """
+    Upload a PDF file, extract text chunks, and index them into the vector store.
+    """
+    file_bytes = await file.read()
+    num_chunks, error = process_pdf_upload(file_bytes)
+
+    if error:
+        return JSONResponse(status_code=500, content={"detail": f"Failed to process file: {error}"})
+    
+    return {"detail": f"{num_chunks} chunks indexed successfully."}

@@ -1,9 +1,24 @@
 fastapi
 uvicorn
-python-dotenv
 pydantic
 pydantic-settings
-chromadb
-ibm-watsonx-ai
-docling
+python-dotenv
+python-multipart
 
+# LangChain, Chroma, PDF support
+langchain
+langchain-community
+langchain-chroma
+chromadb
+unstructured
+pypdf
+
+# IBM WatsonX
+ibm-watsonx-ai
+
+# Testing
+pytest
+pytest-asyncio
+pytest-mock
+httpx
+reportlab

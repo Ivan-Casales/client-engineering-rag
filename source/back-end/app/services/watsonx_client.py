@@ -1,111 +1,87 @@
-from typing import List
-from app.core.config import settings
+from typing import List, Optional
+from langchain.embeddings.base import Embeddings
+from langchain.llms.base import LLM
 from ibm_watsonx_ai import Credentials
-from ibm_watsonx_ai.foundation_models import Embeddings, ModelInference
+from ibm_watsonx_ai.foundation_models import Embeddings as WatsonxEmbedClient, ModelInference
 from ibm_watsonx_ai.metanames import EmbedTextParamsMetaNames as EmbedParams
+from app.core.config import settings
 
+# Initialize IBM Watsonx credentials
 credentials = Credentials(
     url=settings.WATSONX_URL,
     api_key=settings.WATSONX_APIKEY
 )
 
-embed_params = {
-    EmbedParams.TRUNCATE_INPUT_TOKENS: 512,
-    EmbedParams.RETURN_OPTIONS: {
-        'input_text': False
-    }
-}
+class WatsonXEmbeddings(Embeddings):
+    def __init__(self):
+        embed_params = {
+            EmbedParams.TRUNCATE_INPUT_TOKENS: 512,
+            EmbedParams.RETURN_OPTIONS: {'input_text': False}
+        }
+        self.client = WatsonxEmbedClient(
+            model_id=settings.EMBEDDING_MODEL_ID,
+            params=embed_params,
+            credentials=credentials,
+            project_id=settings.WATSONX_PROJECT_ID,
+        )
 
-embedding_client = Embeddings(
-    model_id="ibm/slate-30m-english-rtrvr-v2",
-    params=embed_params,
-    credentials=credentials,
-    project_id=settings.WATSONX_PROJECT_ID,
-)
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        response = self.client.embed_documents(texts=texts)
+        return [r.get("embedding") if isinstance(r, dict) else r for r in response]
 
-rerank_model = ModelInference(
-    model_id="ibm/granite-3-3-8b-instruct",
-    credentials=credentials,
-    project_id=settings.WATSONX_PROJECT_ID,
-    params={
-        "temperature": 0
-    }
-)
+    def embed_query(self, text: str) -> List[float]:
+        return self.embed_documents([text])[0]
 
-qa_model = ModelInference(
-    model_id="ibm/granite-3-3-8b-instruct",
-    credentials=credentials,
-    project_id=settings.WATSONX_PROJECT_ID,
-    params={
-        "decoding_method": "greedy",
-        "max_new_tokens": 300
-    }
-)
+class WatsonXLLM(LLM):
+    model_id: str
+    temperature: float
+    max_new_tokens: int
+    client: Optional[ModelInference] = None
 
-def get_embedding(text: str) -> List[float]:
-    """
-    Compute the embedding vector for the given text.
-
-    Parameters:
-    - text (str): The input text to be embedded.
-
-    Returns:
-    - List[float]: The embedding vector as a list of floats.
-    """
-    resp = embedding_client.embed_documents(texts=[text])
-    first = resp[0]
-    if isinstance(first, dict):
-        return first.get("embedding", [])
-    return first
-
-def rerank_documents(question: str, documents: list[str]) -> list[str]:
-    """
-    Rerank a list of documents by relevance to the given question.
-
-    Parameters:
-    - question (str): The user question used to evaluate relevance.
-    - documents (List[str]): A list of document texts to be reranked.
-
-    Returns:
-    - List[str]: Documents sorted by descending relevance.
-    """
-    prompts = [f"Question: {question}\nContext: {doc}" for doc in documents]
-    resp = rerank_model.generate(prompts)
-
-    raw = resp.get("results", resp) if isinstance(resp, dict) else resp
-
-    if (
-        not isinstance(raw, list)
-        or not raw
-        or not isinstance(raw[0], dict)
-        or "prediction" not in raw[0]
+    def __init__(
+        self,
+        model_id: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_new_tokens: Optional[int] = None
     ):
-        return documents
+        # Determine parameters, falling back to settings
+        model_id_val = model_id or settings.MODEL_ID
+        temperature_val = temperature if temperature is not None else settings.TEMPERATURE
+        max_tokens_val = max_new_tokens if max_new_tokens is not None else settings.MAX_NEW_TOKENS
 
-    scored = list(zip(
-        documents,
-        [item["prediction"] for item in raw]
-    ))
-    scored.sort(key=lambda x: x[1], reverse=True)
-    
-    return [doc for doc, _ in scored]
+        # Initialize BaseModel (pydantic) fields
+        super().__init__(
+            model_id=model_id_val,
+            temperature=temperature_val,
+            max_new_tokens=max_tokens_val
+        )
 
-def generate_answer_with_context(context: str, question: str) -> str:
-    """
-    Generate a conversational answer based on provided context and question.
+        # Initialize the WatsonX ModelInference client
+        self.client = ModelInference(
+            model_id=self.model_id,
+            credentials=credentials,
+            project_id=settings.WATSONX_PROJECT_ID,
+        )
 
-    Parameters:
-    - context (str): Concatenated top documents serving as context.
-    - question (str): The user's question to be answered.
+    @property
+    def _llm_type(self) -> str:
+        return "watsonx"
 
-    Returns:
-    - str: The generated answer text.
-    """
-    prompt = (
-        "System: You are a helpful assistant.\n\n"
-        f"Context:\n{context}\n\n"
-        f"User: {question}\n"
-        "Assistant:"
-    )
-    resp = qa_model.generate(prompt)
-    return resp["results"][0]["generated_text"].strip()
+    def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
+        response = self.client.generate(
+            prompt,
+            params={
+                "temperature": self.temperature,
+                "decoding_method": "greedy",
+                "max_new_tokens": self.max_new_tokens
+            }
+        )
+        return response["results"][0]["generated_text"].strip()
+
+    @property
+    def _identifying_params(self) -> dict:
+        return {
+            "model_id": self.model_id,
+            "temperature": self.temperature,
+            "max_new_tokens": self.max_new_tokens
+        }
