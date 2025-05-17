@@ -89,6 +89,7 @@ env/
 env.bak/
 venv.bak/
 nenv/
+.venv_ui
 
 # IDE settings
 .vscode/
