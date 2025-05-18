@@ -6,13 +6,15 @@ from app.services.vectorstore.loader_service import process_pdf_upload
 from langchain.chains import RetrievalQA
 from app.services.rag.chat_service import process_chat
 from app.services.container import rag_chain, reranker
+from app.services.utility.security import sanitize_input
 
 router = APIRouter()
 
 @router.post("/ask", response_model=AnswerResponse)
 async def ask_question(payload: QuestionRequest):
     try:
-        answer = generate_answer(payload.question, rag_chain, reranker)
+        question = sanitize_input(payload.question)
+        answer = generate_answer(question, rag_chain, reranker)
         return {"answer": answer}
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
@@ -38,7 +40,8 @@ async def chat_conversation(payload: ChatRequest):
     Chat endpoint that maintains context across turns.
     """
     try:
-        new_history, answer = process_chat(payload.message, payload.history)
+        message = sanitize_input(payload.message)
+        new_history, answer = process_chat(message, payload.history)
         return ChatResponse(answer=answer, history=new_history)
     except RuntimeError as e:
         raise HTTPException(status_code=502, detail=str(e))

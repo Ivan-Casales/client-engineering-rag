@@ -1,8 +1,8 @@
 from typing import List, Dict, Tuple
 import re
-
 from app.services.container import llm, vectorstore, reranker
 from app.services.utility.prompt_chat import STRICT_CONTEXT_PROMPT_CHAT
+from app.services.utility.security import sanitize_input
 
 def _format_history(history: List[Dict[str, str]], max_turns: int = 6) -> str:
     if not history:
@@ -26,6 +26,8 @@ def _clean_output(raw: str) -> str:
 def process_chat(message: str, history: List[Dict[str, str]]) -> Tuple[List[Dict[str, str]], str]:
     try:
         history = history or []
+
+        message = sanitize_input(message)
 
         retriever = vectorstore.as_retriever()
         docs = retriever.get_relevant_documents(message)

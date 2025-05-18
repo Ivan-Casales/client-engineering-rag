@@ -17,6 +17,8 @@ with st.form("chat_form", clear_on_submit=True):
     user_input = st.text_input("Your message:", key="chat_input")
     submit = st.form_submit_button("Send")
     if submit and user_input:
+        if len(user_input) > 512 or '\n' in user_input:
+            st.error("The message must be plain text (no newlines) and up to 512 characters.")
         try:
             resp = requests.post(
                 f"{API_BASE_URL}/api/chat",

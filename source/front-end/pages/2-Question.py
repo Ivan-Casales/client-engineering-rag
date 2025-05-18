@@ -18,6 +18,8 @@ question: Optional[str] = st.text_input("Your question:")
 if st.button("Ask"):
     if not question:
         st.warning("Please enter a question before submitting.")
+    elif len(question) > 512 or '\n' in question:
+        st.warning("The question must be plain text (no newlines) and up to 512 characters.")
     else:
         try:
             endpoint = f"{API_BASE_URL}/api/ask"
