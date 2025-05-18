@@ -1,5 +1,5 @@
 import pytest
-from tests.utils_watsonx import generate_answer_with_context
+from tests.test_utility.utils_watsonx import generate_answer_with_context
 
 @ pytest.mark.integration
 def test_generate_answer_with_context():

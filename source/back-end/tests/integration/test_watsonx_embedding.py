@@ -1,5 +1,5 @@
 import pytest
-from tests.utils_watsonx import get_embedding
+from tests.test_utility.utils_watsonx import get_embedding
 
 @ pytest.mark.integration
 def test_get_embedding_returns_vector():

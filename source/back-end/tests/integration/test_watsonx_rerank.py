@@ -1,5 +1,5 @@
 import pytest
-from tests.utils_watsonx import rerank_documents
+from tests.test_utility.utils_watsonx import rerank_documents
 
 @ pytest.mark.integration
 def test_rerank_documents_order():

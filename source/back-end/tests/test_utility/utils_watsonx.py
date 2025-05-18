@@ -10,7 +10,8 @@ for module in (
 ):
     sys.modules.pop(module, None)
 
-from app.services.watsonx_client import WatsonXEmbeddings, WatsonXLLM
+from app.services.watsonx.watsonx_embeddings import WatsonXEmbeddings
+from app.services.watsonx.watsonx_llm import WatsonXLLM
 
 def get_embedding(text: str) -> list[float]:
     return WatsonXEmbeddings().embed_query(text)

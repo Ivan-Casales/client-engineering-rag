@@ -1,5 +1,5 @@
 import pytest
-from app.services.pdf_parser import extract_chunks_from_pdf
+from app.services.utility.pdf_parser import extract_chunks_from_pdf
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import CharacterTextSplitter
 

@@ -7,7 +7,9 @@ class DummyEmbeddings:
     pass
 
 class DummyVectorStore:
-    pass
+    def as_retriever(self, **kwargs):
+        # Return a dummy retriever object
+        return "dummy_retriever"
 
 class DummyLLM:
     pass
@@ -17,18 +19,29 @@ class DummyChain:
 
 @pytest.fixture(autouse=True)
 def patch_container_dependencies(monkeypatch):
-    # Patch WatsonXEmbeddings and WatsonXLLM in watsonx_client module
-    import app.services.watsonx_client as wxc
-    monkeypatch.setattr(wxc, 'WatsonXEmbeddings', lambda: DummyEmbeddings())
-    monkeypatch.setattr(wxc, 'WatsonXLLM', lambda *args, **kwargs: DummyLLM())
+    # Patch WatsonXEmbeddings
+    import app.services.watsonx.watsonx_embeddings as wxe
+    monkeypatch.setattr(wxe, 'WatsonXEmbeddings', lambda: DummyEmbeddings())
 
-    # Patch load_vectorstore in chroma_db module
-    import app.services.chroma_db as cdb
-    monkeypatch.setattr(cdb, 'load_vectorstore', lambda embedding_model, persist_directory: DummyVectorStore())
+    # Patch WatsonXLLM
+    import app.services.watsonx.watsonx_llm as wxl
+    monkeypatch.setattr(wxl, 'WatsonXLLM', lambda *args, **kwargs: DummyLLM())
 
-    # Patch build_rag_chain in rag_pipeline module
-    import app.services.rag_pipeline as rp
-    monkeypatch.setattr(rp, 'build_rag_chain', lambda vs, llm: DummyChain())
+    # Patch load_vectorstore in vectorstore.chroma_db
+    import app.services.vectorstore.chroma_db as cdb
+    monkeypatch.setattr(
+        cdb,
+        'load_vectorstore',
+        lambda embedding_model, persist_directory: DummyVectorStore()
+    )
+
+    # Patch RetrievalQA.from_chain_type to return DummyChain
+    from langchain.chains import RetrievalQA
+    monkeypatch.setattr(
+        RetrievalQA,
+        'from_chain_type',
+        staticmethod(lambda *, llm, retriever, chain_type_kwargs=None: DummyChain())
+    )
 
     # Ensure container module is reloaded fresh
     if 'app.services.container' in sys.modules:
