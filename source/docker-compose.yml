@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  backend:
+    build:
+      context: ./back-end
+    container_name: backend
+    env_file:
+      - ./back-end/.env
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./front-end
+    container_name: frontend
+    environment:
+      - API_BASE_URL=http://backend:8000
+    ports:
+      - "8501:8501"
+    restart: unless-stopped

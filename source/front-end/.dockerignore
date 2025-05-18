@@ -1,0 +1,13 @@
+# Cachés de Python
+__pycache__/
+*.py[cod]
+.venv_ui/
+.venv/
+
+# Entorno local
+env
+.env
+
+# Git
+.git/
+.gitignore

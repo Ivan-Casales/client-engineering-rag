@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+venv/
+.env
+tests/
+.pytest_cache/
+.chromadb/
+*.db
+.git/
+.gitignore
