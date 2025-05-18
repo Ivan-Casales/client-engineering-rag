@@ -27,7 +27,7 @@
 7. [Usage](#7-usage)
 
    1. [Web UI](#71-web-ui)
-   2. [REST API ESPECIFICATION](#72-rest-api)
+   2. [REST API](#72-rest-api)
 8. [API Reference](#8-api-reference)
 9. [Author](#9-author)
 ---
