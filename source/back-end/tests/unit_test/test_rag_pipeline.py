@@ -2,7 +2,7 @@ import pytest
 from langchain.chains import RetrievalQA
 from app.services.rag.rag_pipeline import generate_answer
 from tests.test_utility.prompt_test import TEST_PROMPT
-# Helper para construir el RAG chain
+
 def build_rag_chain(vectorstore, llm):
     retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
     return RetrievalQA.from_chain_type(
@@ -51,7 +51,6 @@ def test_build_rag_chain_invokes_from_chain_type(monkeypatch):
     ("Bye?", "Bye")
 ])
 def test_generate_answer_returns_chain_response(question, expected):
-    # Documento simulado con page_content
     class DummyDoc:
         def __init__(self, content):
             self.page_content = content
@@ -59,7 +58,6 @@ def test_generate_answer_returns_chain_response(question, expected):
     class DummyRetriever:
         def get_relevant_documents(self, q):
             assert q == question
-            # Ahora devolvemos objetos que tengan .page_content
             return [DummyDoc("doc1"), DummyDoc("doc2"), DummyDoc("doc3")]
 
     class FakeChain:
@@ -72,7 +70,6 @@ def test_generate_answer_returns_chain_response(question, expected):
 
     class DummyReranker:
         def rerank_documents(self, question_param, context, top_k):
-            # context es lista de DummyDoc
             assert question_param == question
             assert [d.page_content for d in context] == ["doc1", "doc2", "doc3"]
             assert top_k == 5
