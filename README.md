@@ -110,7 +110,11 @@ The repository follows **Git Flow** with the following conventions:
 
 ### 2.6 Project management (Azure DevOps)
 
-All requirements were broken down into **Epics → Issues → Tasks** in an [Azure DevOps project](https://dev.azure.com/casalesivan/IBM%20Challenge/_boards/board/t/IBM%20Challenge%20Team/Epics). A sprint of **7 working days** was planned; The burndown chart stayed close to the plan, with only about 10% variation.
+All requirements were broken down into **Epics → Issues → Tasks** in an [Azure DevOps project](https://dev.azure.com/casalesivan/IBM%20Challenge/_boards/board/t/IBM%20Challenge%20Team/Epics). 
+
+A sprint of **7 working days** was planned: [Planification](https://dev.azure.com/casalesivan/IBM%20Challenge/_wiki/wikis/IBM-Challenge.wiki/1/Planificaci%C3%B3n-de-trabajo).
+
+The burndown chart stayed close to the plan, with only about 5% variation.
 
 ### 2.7 Security considerations
 
